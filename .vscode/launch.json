@@ -1,0 +1,12 @@
+{
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run nest",
+      "runtimeExecutable": "nest",
+      "cwd": "${workspaceFolder}",
+      "args": []
+    }
+  ]
+}
