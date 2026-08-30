@@ -111,6 +111,8 @@ export class DrizzleUsersRepository implements UsersRepositoryPort {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      password: user.password ?? null,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -122,6 +124,8 @@ export class DrizzleUsersRepository implements UsersRepositoryPort {
       firstName: model.firstName,
       lastName: model.lastName,
       email: model.email,
+      password: model.password ?? undefined,
+      role: model.role,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     });

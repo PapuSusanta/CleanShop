@@ -1,5 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { Collection, Db, Filter } from 'mongodb';
+import { Role } from '../../../shared/domain/enums/role.enum';
 import {
   ApplicationException,
   ApplicationExceptionCode,
@@ -17,6 +18,8 @@ interface UsersCollection {
   firstName: string;
   lastName: string;
   email: string;
+  password?: string;
+  role: Role;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -108,6 +111,8 @@ export class MongoUsersRepository implements UsersRepositoryPort {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      password: user.password,
+      role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -119,6 +124,8 @@ export class MongoUsersRepository implements UsersRepositoryPort {
       firstName: model.firstName,
       lastName: model.lastName,
       email: model.email,
+      password: model.password,
+      role: model.role,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     });

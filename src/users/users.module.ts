@@ -36,5 +36,6 @@ import { UsersController } from './presentation/users.controller';
     //   useClass: MongoUsersRepository,
     // },
   ],
+  exports: [USERS_REPOSITORY],
 })
 export class UsersModule {}

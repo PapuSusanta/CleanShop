@@ -50,4 +50,16 @@ export const envSchema = Joi.object<Env>({
       'any.only':
         'DATABASE must be either mongodb or postgres',
     }),
+
+  JWT_SECRET: Joi.string()
+    .min(16)
+    .required()
+    .messages({
+      'any.required': 'JWT_SECRET is required',
+      'string.empty': 'JWT_SECRET is required',
+      'string.min': 'JWT_SECRET must be at least 16 characters long',
+    }),
+
+  JWT_EXPIRES_IN: Joi.string()
+    .default('1h'),
 });

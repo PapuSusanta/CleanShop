@@ -1,6 +1,6 @@
-import type { TypesConfigService } from '../../../config/config.types';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Db, MongoClient } from 'mongodb';
+import { TypesConfigService } from '../../../config/config.types';
 
 @Injectable()
 export class MongoService implements OnModuleDestroy {

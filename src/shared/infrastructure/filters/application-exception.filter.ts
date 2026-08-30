@@ -14,6 +14,7 @@ const CODE_TO_HTTP: Record<ApplicationExceptionCode, HttpStatus> = {
   [ApplicationExceptionCode.VALIDATION_ERROR]: HttpStatus.BAD_REQUEST,
   [ApplicationExceptionCode.CONFLICT]: HttpStatus.CONFLICT,
   [ApplicationExceptionCode.NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [ApplicationExceptionCode.UNAUTHORIZED]: HttpStatus.UNAUTHORIZED,
 };
 
 @Catch(ApplicationException)

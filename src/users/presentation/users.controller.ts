@@ -10,6 +10,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Role } from '../../shared/domain/enums/role.enum';
+import { Roles } from '../../shared/infrastructure/decorators/roles.decorator';
 import { CreateUserCommand } from '../application/commends/create-user/create-user.command';
 import { DeleteUserCommand } from '../application/commends/delete-user/delete-user.command';
 import { UpdateUserCommand } from '../application/commends/update-user/update-user.command';
@@ -20,6 +23,7 @@ import { CreateUserRequest } from './contracts/create-user.request';
 import { UpdateUserRequest } from './contracts/update-user.request';
 import { UserResponse } from './contracts/user.response';
 
+@ApiBearerAuth('access-token')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -68,6 +72,7 @@ export class UsersController {
     return UserResponse.fromEntity(user);
   }
 
+  @Roles(Role.ADMIN)
   @Delete(':id')
   async delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
     await this.command.execute<DeleteUserCommand, void>(

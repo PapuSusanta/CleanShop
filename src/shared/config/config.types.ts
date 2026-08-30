@@ -19,6 +19,9 @@ export interface Env {
   POSTGRES_URL: string;
 
   DATABASE: DatabaseType;
+
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 export class TypesConfigService extends ConfigService<Env> {}
