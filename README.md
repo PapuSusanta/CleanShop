@@ -262,7 +262,6 @@ pnpm test:e2e
 pnpm lint
 pnpm generate   # generate a new Drizzle migration from schema changes
 pnpm migrate    # apply pending Drizzle migrations
-pnpm openapi    # build the app and emit an openapi.json file
 ```
 
 ## 🧠 Architecture Notes
