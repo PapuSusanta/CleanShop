@@ -6,6 +6,7 @@ import { TypesConfigModule } from './shared/config/config.module';
 import { envSchema } from './shared/config/validation';
 // import { MongoModule } from './shared/infrastructure/database/mongodb/mongo.module';
 import { DrizzleModule } from './shared/infrastructure/database/postgres/drizzle.module';
+import { DomainEventsModule } from './shared/infrastructure/events/domain-events.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
       },
     }),
     TypesConfigModule,
+    DomainEventsModule,
 
     // Database Modules
     // MongoModule,

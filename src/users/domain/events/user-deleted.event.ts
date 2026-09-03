@@ -1,0 +1,14 @@
+import { DomainEvent } from '../../../shared/domain/events/domain-event';
+
+export class UserDeletedEvent extends DomainEvent {
+  constructor(
+    aggregateId: string,
+    readonly email: string,
+  ) {
+    super(aggregateId);
+  }
+
+  get eventName(): string {
+    return 'user.deleted';
+  }
+}
