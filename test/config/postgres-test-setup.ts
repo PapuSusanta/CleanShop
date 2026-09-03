@@ -5,6 +5,7 @@ import {
   ForwardReference,
   INestApplication,
   Type,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -79,11 +80,26 @@ export class PostgresTestSetup {
       .compile();
 
     this.app = moduleFixture.createNestApplication();
+    this.app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     this.app.useGlobalFilters(
       new ApplicationExceptionFilter(),
       new DomainExceptionFilter(),
     );
     await this.app.init();
+  }
+
+  /**
+   * There is no API for handing out the admin role, so the e2e suite grants it
+   * directly in the database to exercise the admin-only endpoints.
+   */
+  async promoteToAdmin(email: string) {
+    if (!this.client) {
+      throw new Error('Test database client is not initialised');
+    }
+
+    await this.client`UPDATE users SET role = 'admin' WHERE email = ${email}`;
   }
 
   async cleanup() {

@@ -1,4 +1,4 @@
-import type { LoginResult } from '../../application/commends/login/login.result';
+import type { LoginResult } from '../../application/commands/login/login.result';
 
 export class LoginResponse {
   accessToken: string;

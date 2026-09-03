@@ -1,6 +1,4 @@
-import { LoginHandler } from './commends/login/login.handler';
-import { RegisterHandler } from './commends/register/register.handler';
-import { MeHandler } from './queries/me/me.handler';
+import { LoginHandler } from './commands/login/login.handler';
+import { RegisterHandler } from './commands/register/register.handler';
 
-export const CommendHandlers = [RegisterHandler, LoginHandler];
-export const QueryHandlers = [MeHandler];
+export const CommandHandlers = [RegisterHandler, LoginHandler];

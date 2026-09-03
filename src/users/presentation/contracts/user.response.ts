@@ -1,21 +1,24 @@
-import type { Users } from '../../domain/entity/users.entity';
+import type { Role } from '../../../shared/domain/enums/role.enum';
+import type { UserView } from '../../application/queries/user.view';
 
 export class UserResponse {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  role: Role;
   createdAt: string;
   updatedAt: string;
 
-  static fromEntity(user: Users): UserResponse {
+  static fromView(view: UserView): UserResponse {
     const response = new UserResponse();
-    response.id = user.id.value;
-    response.firstName = user.firstName;
-    response.lastName = user.lastName;
-    response.email = user.email;
-    response.createdAt = user.createdAt.toISOString();
-    response.updatedAt = user.updatedAt.toISOString();
+    response.id = view.id;
+    response.firstName = view.firstName;
+    response.lastName = view.lastName;
+    response.email = view.email;
+    response.role = view.role;
+    response.createdAt = view.createdAt.toISOString();
+    response.updatedAt = view.updatedAt.toISOString();
 
     return response;
   }

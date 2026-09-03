@@ -7,7 +7,7 @@ import { Env } from '../shared/config/config.types';
 import { JwtAuthGuard } from '../shared/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from '../shared/infrastructure/guards/roles.guard';
 import { UsersModule } from '../users/users.module';
-import { CommendHandlers, QueryHandlers } from './application';
+import { CommandHandlers } from './application';
 import { PASSWORD_HASHER } from './application/ports/password-hasher.port';
 import { TOKEN_PROVIDER } from './application/ports/token.port';
 import { BcryptPasswordHasher } from './infrastructure/adapters/bcrypt-password-hasher';
@@ -31,8 +31,7 @@ import { AuthController } from './presentation/auth.controller';
   ],
   controllers: [AuthController],
   providers: [
-    ...CommendHandlers,
-    ...QueryHandlers,
+    ...CommandHandlers,
     JwtAuthGuard,
     RolesGuard,
     {

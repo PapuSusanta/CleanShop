@@ -1,19 +1,26 @@
 import { UniqueEntityId } from './value-objects/unique-entity-id.vo';
 
-export abstract class Entity<T extends UniqueEntityId = UniqueEntityId> {
-  constructor(protected readonly _id: T) {}
+/**
+ * An entity is defined by its identity, not by its attributes: two entities
+ * with different attributes but the same id are the same entity.
+ */
+export abstract class Entity<TId extends UniqueEntityId = UniqueEntityId> {
+  protected constructor(protected readonly _id: TId) {}
 
-  get id(): T {
+  get id(): TId {
     return this._id;
   }
 
-  equals(object?: Entity<T>): boolean {
-    if (object === null || object === undefined) {
+  equals(other?: Entity<TId> | null): boolean {
+    if (other === null || other === undefined) {
       return false;
     }
-    if (!(object instanceof Entity)) {
+    if (other === this) {
+      return true;
+    }
+    if (!(other instanceof Entity)) {
       return false;
     }
-    return object.id.equals(this._id);
+    return this._id.equals(other.id);
   }
 }

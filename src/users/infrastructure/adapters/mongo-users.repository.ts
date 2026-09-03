@@ -1,19 +1,25 @@
-import { Inject } from '@nestjs/common';
-import { Collection, Db, Filter } from 'mongodb';
+import type {
+  UsersFilter,
+  UsersRepositoryPort,
+} from '../../application/ports/users-repository.port';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Collection, Db, Filter, MongoServerError } from 'mongodb';
 import { Role } from '../../../shared/domain/enums/role.enum';
 import {
   ApplicationException,
   ApplicationExceptionCode,
 } from '../../../shared/domain/exceptions/application.exception';
 import { MONGO_DB } from '../../../shared/infrastructure/database/mongodb/mongo.provider';
-import {
-  UsersFilters,
-  UsersRepositoryPort,
-} from '../../application/ports/users-repository.port';
-import { Users } from '../../domain/entity/users.entity';
-import { UserId } from '../../domain/value-objects/user-id';
+import { User } from '../../domain/user.aggregate';
+import { Email } from '../../domain/value-objects/email.vo';
+import { HashedPassword } from '../../domain/value-objects/hashed-password.vo';
+import { PersonName } from '../../domain/value-objects/person-name.vo';
+import { UserId } from '../../domain/value-objects/user-id.vo';
 
-interface UsersCollection {
+const DUPLICATE_KEY = 11000;
+const DEFAULT_LIMIT = 50;
+
+interface UserDocument {
   _id: string;
   firstName: string;
   lastName: string;
@@ -24,110 +30,113 @@ interface UsersCollection {
   updatedAt: Date;
 }
 
-export class MongoUsersRepository implements UsersRepositoryPort {
-  private readonly collection: Collection<UsersCollection>;
+@Injectable()
+export class MongoUsersRepository implements UsersRepositoryPort, OnModuleInit {
+  private readonly collection: Collection<UserDocument>;
 
   constructor(@Inject(MONGO_DB) private readonly db: Db) {
-    this.collection = this.db.collection('users');
+    this.collection = this.db.collection<UserDocument>('users');
   }
 
-  async save(user: Users): Promise<void> {
-    const doc = MongoUsersRepository.toPersistence(user);
-    await this.collection.insertOne(doc);
+  /** Postgres gets its unique index from a migration; Mongo needs it declared. */
+  async onModuleInit(): Promise<void> {
+    await this.collection.createIndex({ email: 1 }, { unique: true });
   }
 
-  async update(user: Users): Promise<Users> {
-    const doc = MongoUsersRepository.toPersistence(user);
-    const result = await this.collection.findOneAndUpdate(
-      { _id: user.id.value },
-      {
-        $set: {
-          firstName: doc.firstName,
-          lastName: doc.lastName,
-          email: doc.email,
-          updatedAt: doc.updatedAt,
-        },
-      },
-      { returnDocument: 'after' },
+  async save(user: User): Promise<void> {
+    const document = MongoUsersRepository.toDocument(user);
+
+    try {
+      await this.collection.replaceOne({ _id: document._id }, document, {
+        upsert: true,
+      });
+    }
+    catch (error) {
+      throw MongoUsersRepository.translate(error, document.email);
+    }
+  }
+
+  async delete(user: User): Promise<void> {
+    await this.collection.deleteOne({ _id: user.id.value });
+  }
+
+  async findById(id: UserId): Promise<User | null> {
+    const document = await this.collection.findOne({ _id: id.value });
+
+    return document ? MongoUsersRepository.toDomain(document) : null;
+  }
+
+  async findByEmail(email: Email): Promise<User | null> {
+    const document = await this.collection.findOne({ email: email.value });
+
+    return document ? MongoUsersRepository.toDomain(document) : null;
+  }
+
+  async findAll(filter: UsersFilter): Promise<User[]> {
+    const query: Filter<UserDocument> = {};
+
+    if (filter.email) {
+      query.email = filter.email.value;
+    }
+
+    const documents = await this.collection
+      .find(query)
+      .sort({ createdAt: 1 })
+      .skip(filter.offset ?? 0)
+      .limit(filter.limit ?? DEFAULT_LIMIT)
+      .toArray();
+
+    return documents.map(MongoUsersRepository.toDomain);
+  }
+
+  async existsByEmail(email: Email): Promise<boolean> {
+    const count = await this.collection.countDocuments(
+      { email: email.value },
+      { limit: 1 },
     );
 
-    if (!result) {
-      throw new ApplicationException(
-        `User with id '${user.id.value}' not found`,
-        ApplicationExceptionCode.NOT_FOUND,
-      );
-    }
-
-    return MongoUsersRepository.toDomain(result);
+    return count > 0;
   }
 
-  async findOne(id: UserId): Promise<Users | null> {
-    const doc = await this.collection.findOne({ _id: id.value });
+  // --- Mapping -------------------------------------------------------------
 
-    if (!doc)
-      return null;
+  private static toDocument(user: User): UserDocument {
+    const snapshot = user.toSnapshot();
 
-    return MongoUsersRepository.toDomain(doc);
-  }
-
-  async findByEmail(email: string): Promise<Users | null> {
-    const doc = await this.collection.findOne({ email });
-
-    if (!doc)
-      return null;
-
-    return MongoUsersRepository.toDomain(doc);
-  }
-
-  async findAll(filters: UsersFilters): Promise<Users[]> {
-    const query: Filter<UsersCollection> = {};
-
-    if (filters?.email !== undefined) {
-      query.email = filters.email;
-    }
-
-    const docs = await this.collection.find(query).toArray();
-
-    return docs.map(MongoUsersRepository.toDomain);
-  }
-
-  async delete(id: UserId): Promise<void> {
-    const user = await this.collection.findOne({ _id: id.value });
-
-    if (!user) {
-      throw new ApplicationException(
-        `User with id ${id.value} not found`,
-        ApplicationExceptionCode.NOT_FOUND,
-      );
-    }
-
-    await this.collection.deleteOne({ _id: id.value });
-  }
-
-  // Private helper functions
-  private static toPersistence(user: Users): UsersCollection {
     return {
-      _id: user.id.value,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      password: user.password,
-      role: user.role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      _id: snapshot.id.value,
+      firstName: snapshot.name.firstName,
+      lastName: snapshot.name.lastName,
+      email: snapshot.email.value,
+      password: snapshot.password?.value,
+      role: snapshot.role,
+      createdAt: snapshot.createdAt,
+      updatedAt: snapshot.updatedAt,
     };
   }
 
-  private static toDomain(model: UsersCollection): Users {
-    return Users.toEntity({
-      id: new UserId(model._id),
-      firstName: model.firstName,
-      lastName: model.lastName,
-      email: model.email,
-      password: model.password,
-      role: model.role,
-      createdAt: model.createdAt,
-      updatedAt: model.updatedAt,
+  private static toDomain(document: UserDocument): User {
+    return User.fromPersistence({
+      id: UserId.fromString(document._id),
+      name: PersonName.create(document.firstName, document.lastName),
+      email: Email.create(document.email),
+      password: document.password ?
+          HashedPassword.fromHash(document.password) :
+        undefined,
+      role: document.role,
+      createdAt: document.createdAt,
+      updatedAt: document.updatedAt,
     });
+  }
+
+  private static translate(error: unknown, email: string): unknown {
+    if (error instanceof MongoServerError && error.code === DUPLICATE_KEY) {
+      return new ApplicationException(
+        `A user with email '${email}' already exists`,
+        ApplicationExceptionCode.CONFLICT,
+      );
+    }
+
+    return error;
   }
 }
