@@ -2,11 +2,10 @@ import type { DomainEventPublisherPort } from '../../../../shared/application/po
 import type { UsersRepositoryPort } from '../../ports/users-repository.port';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  NotFoundException,
+} from '../../../../shared/application/exceptions/application.exception';
+import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import { UserId } from '../../../domain/value-objects/user-id.vo';
 import { USERS_REPOSITORY } from '../../ports/users-repository.port';
 import { DeleteUserCommand } from './delete-user.command';
@@ -27,10 +26,7 @@ export class DeleteUserHandler implements ICommandHandler<
     const user = await this.users.findById(UserId.fromString(command.id));
 
     if (!user) {
-      throw new ApplicationException(
-        `User with id '${command.id}' not found`,
-        ApplicationExceptionCode.NOT_FOUND,
-      );
+      throw new NotFoundException(`User with id '${command.id}' not found`);
     }
 
     user.delete();

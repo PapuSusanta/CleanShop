@@ -6,9 +6,8 @@ import type {
 import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../shared/domain/exceptions/application.exception';
+  ConflictException,
+} from '../../../shared/application/exceptions/application.exception';
 import { DRIZZLE } from '../../../shared/infrastructure/database/postgres/drizzle.provider';
 import { users } from '../../../shared/infrastructure/database/postgres/schemas';
 import { User } from '../../domain/user.aggregate';
@@ -136,10 +135,7 @@ export class DrizzleUsersRepository implements UsersRepositoryPort {
     const code = (error as { code?: string })?.code;
 
     if (code === UNIQUE_VIOLATION) {
-      return new ApplicationException(
-        `A user with email '${email}' already exists`,
-        ApplicationExceptionCode.CONFLICT,
-      );
+      return new ConflictException(`A user with email '${email}' already exists`);
     }
 
     return error;

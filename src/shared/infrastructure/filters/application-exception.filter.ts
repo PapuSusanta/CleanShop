@@ -8,7 +8,7 @@ import { Response } from 'express';
 import {
   ApplicationException,
   ApplicationExceptionCode,
-} from '../../domain/exceptions/application.exception';
+} from '../../application/exceptions/application.exception';
 
 const CODE_TO_HTTP: Record<ApplicationExceptionCode, HttpStatus> = {
   [ApplicationExceptionCode.VALIDATION_ERROR]: HttpStatus.BAD_REQUEST,

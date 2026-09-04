@@ -1,8 +1,8 @@
 import type { UsersRepositoryPort } from '../../ports/users-repository.port';
 import {
-  ApplicationException,
   ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  NotFoundException,
+} from '../../../../shared/application/exceptions/application.exception';
 import { User } from '../../../domain/user.aggregate';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { HashedPassword } from '../../../domain/value-objects/hashed-password.vo';
@@ -27,7 +27,7 @@ function repositoryStub(
 describe('getUserHandler', () => {
   const id = 'c989db2f-2926-4795-adfb-cea08fbba448';
 
-  it('throws ApplicationException with NOT_FOUND when the user does not exist', async () => {
+  it('throws NotFoundException when the user does not exist', async () => {
     const handler = new GetUserHandler(repositoryStub());
 
     await expect(handler.execute(new GetUserQuery(id))).rejects.toMatchObject({
@@ -35,7 +35,7 @@ describe('getUserHandler', () => {
       message: `User with id '${id}' not found`,
     });
     await expect(handler.execute(new GetUserQuery(id))).rejects.toBeInstanceOf(
-      ApplicationException,
+      NotFoundException,
     );
   });
 

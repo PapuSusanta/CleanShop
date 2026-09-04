@@ -3,11 +3,10 @@ import type { UsersRepositoryPort } from '../../../../users/application/ports/us
 import type { PasswordHasherPort } from '../../ports/password-hasher.port';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  ConflictException,
+} from '../../../../shared/application/exceptions/application.exception';
+import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import { USERS_REPOSITORY } from '../../../../users/application/ports/users-repository.port';
 import { User } from '../../../../users/domain/user.aggregate';
 import { Email } from '../../../../users/domain/value-objects/email.vo';
@@ -34,10 +33,7 @@ export class RegisterHandler implements ICommandHandler<
     const email = Email.create(command.email);
 
     if (await this.users.existsByEmail(email)) {
-      throw new ApplicationException(
-        `A user with email '${email.value}' already exists`,
-        ApplicationExceptionCode.CONFLICT,
-      );
+      throw new ConflictException(`A user with email '${email.value}' already exists`);
     }
 
     // Hashing is the only thing auth adds here: the aggregate is handed a

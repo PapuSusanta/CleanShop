@@ -3,10 +3,18 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run nest",
-      "runtimeExecutable": "nest",
+      "name": "Debug",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "args": [
+        "${workspaceFolder}/src/main.ts"
+      ],
+      "sourceMaps": true,
       "cwd": "${workspaceFolder}",
-      "args": []
+      "console": "integratedTerminal"
     }
   ]
 }

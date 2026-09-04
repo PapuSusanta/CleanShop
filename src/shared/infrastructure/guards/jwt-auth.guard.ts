@@ -1,5 +1,5 @@
-import type { Request } from 'express';
 import type { TokenPayload } from '../../domain/interfaces/token-payload.interface';
+import type { AuthenticatedRequest } from '../types/authenticated-request';
 import {
   CanActivate,
   ExecutionContext,
@@ -27,7 +27,7 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = JwtAuthGuard.extractToken(request);
 
     if (!token) {
@@ -44,7 +44,7 @@ export class JwtAuthGuard implements CanActivate {
     return true;
   }
 
-  private static extractToken(request: Request): string | undefined {
+  private static extractToken(request: AuthenticatedRequest): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }

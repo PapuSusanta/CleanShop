@@ -4,9 +4,8 @@ import type { TokenProviderPort } from '../../ports/token.port';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  UnauthorizedException,
+} from '../../../../shared/application/exceptions/application.exception';
 import { USERS_REPOSITORY } from '../../../../users/application/ports/users-repository.port';
 import { Email } from '../../../../users/domain/value-objects/email.vo';
 import { PASSWORD_HASHER } from '../../ports/password-hasher.port';
@@ -54,10 +53,7 @@ export class LoginHandler implements ICommandHandler<
   }
 
   /** Same message either way, so the response cannot be used to probe emails. */
-  private static invalidCredentials(): ApplicationException {
-    return new ApplicationException(
-      'Invalid email or password',
-      ApplicationExceptionCode.UNAUTHORIZED,
-    );
+  private static invalidCredentials(): UnauthorizedException {
+    return new UnauthorizedException('Invalid email or password');
   }
 }
