@@ -1,6 +1,6 @@
 import type { UsersRepositoryPort } from '../../ports/users-repository.port';
+import { ApplicationExceptionCode } from '../../../../shared/application/exceptions/application.exception';
 import { Role } from '../../../../shared/domain/enums/role.enum';
-import { ApplicationExceptionCode } from '../../../../shared/domain/exceptions/application.exception';
 import { UserEmailChangedEvent } from '../../../domain/events/user-email-changed.event';
 import { User } from '../../../domain/user.aggregate';
 import { Email } from '../../../domain/value-objects/email.vo';

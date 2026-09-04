@@ -2,11 +2,10 @@ import type { DomainEventPublisherPort } from '../../../../shared/application/po
 import type { UsersRepositoryPort } from '../../ports/users-repository.port';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  ConflictException,
+} from '../../../../shared/application/exceptions/application.exception';
+import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import { User } from '../../../domain/user.aggregate';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { PersonName } from '../../../domain/value-objects/person-name.vo';
@@ -30,10 +29,7 @@ export class CreateUserHandler implements ICommandHandler<
     const email = Email.create(command.email);
 
     if (await this.users.existsByEmail(email)) {
-      throw new ApplicationException(
-        `A user with email '${email.value}' already exists`,
-        ApplicationExceptionCode.CONFLICT,
-      );
+      throw new ConflictException(`A user with email '${email.value}' already exists`);
     }
 
     const user = User.create(

@@ -2,11 +2,11 @@ import type { DomainEventPublisherPort } from '../../../../shared/application/po
 import type { UsersRepositoryPort } from '../../ports/users-repository.port';
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  ConflictException,
+  NotFoundException,
+} from '../../../../shared/application/exceptions/application.exception';
+import { DOMAIN_EVENT_PUBLISHER } from '../../../../shared/application/ports/domain-event-publisher.port';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { PersonName } from '../../../domain/value-objects/person-name.vo';
 import { UserId } from '../../../domain/value-objects/user-id.vo';
@@ -35,10 +35,7 @@ export class UpdateUserHandler implements ICommandHandler<
     const user = await this.users.findById(userId);
 
     if (!user) {
-      throw new ApplicationException(
-        `User with id '${command.id}' not found`,
-        ApplicationExceptionCode.NOT_FOUND,
-      );
+      throw new NotFoundException(`User with id '${command.id}' not found`);
     }
 
     const email = Email.create(command.email);
@@ -60,10 +57,7 @@ export class UpdateUserHandler implements ICommandHandler<
     const owner = await this.users.findByEmail(email);
 
     if (owner && !owner.id.equals(userId)) {
-      throw new ApplicationException(
-        `A user with email '${email.value}' already exists`,
-        ApplicationExceptionCode.CONFLICT,
-      );
+      throw new ConflictException(`A user with email '${email.value}' already exists`);
     }
   }
 }

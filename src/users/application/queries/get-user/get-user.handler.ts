@@ -2,9 +2,8 @@ import type { UsersRepositoryPort } from '../../ports/users-repository.port';
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../../shared/domain/exceptions/application.exception';
+  NotFoundException,
+} from '../../../../shared/application/exceptions/application.exception';
 import { UserId } from '../../../domain/value-objects/user-id.vo';
 import { USERS_REPOSITORY } from '../../ports/users-repository.port';
 import { UserView } from '../user.view';
@@ -21,10 +20,7 @@ export class GetUserHandler implements IQueryHandler<GetUserQuery, UserView> {
     const user = await this.users.findById(UserId.fromString(query.id));
 
     if (!user) {
-      throw new ApplicationException(
-        `User with id '${query.id}' not found`,
-        ApplicationExceptionCode.NOT_FOUND,
-      );
+      throw new NotFoundException(`User with id '${query.id}' not found`);
     }
 
     return UserView.fromAggregate(user);

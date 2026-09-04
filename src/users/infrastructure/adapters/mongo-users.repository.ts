@@ -4,11 +4,10 @@ import type {
 } from '../../application/ports/users-repository.port';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Collection, Db, Filter, MongoServerError } from 'mongodb';
-import { Role } from '../../../shared/domain/enums/role.enum';
 import {
-  ApplicationException,
-  ApplicationExceptionCode,
-} from '../../../shared/domain/exceptions/application.exception';
+  ConflictException,
+} from '../../../shared/application/exceptions/application.exception';
+import { Role } from '../../../shared/domain/enums/role.enum';
 import { MONGO_DB } from '../../../shared/infrastructure/database/mongodb/mongo.provider';
 import { User } from '../../domain/user.aggregate';
 import { Email } from '../../domain/value-objects/email.vo';
@@ -131,10 +130,7 @@ export class MongoUsersRepository implements UsersRepositoryPort, OnModuleInit {
 
   private static translate(error: unknown, email: string): unknown {
     if (error instanceof MongoServerError && error.code === DUPLICATE_KEY) {
-      return new ApplicationException(
-        `A user with email '${email}' already exists`,
-        ApplicationExceptionCode.CONFLICT,
-      );
+      return new ConflictException(`A user with email '${email}' already exists`);
     }
 
     return error;
